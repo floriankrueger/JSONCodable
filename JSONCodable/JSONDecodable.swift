@@ -367,6 +367,58 @@ public class JSONDecoder {
         return decoded
     }
     
+    // [Int:JSONCompatible]
+    public func decode<Value: JSONCompatible>(_ key: String) throws -> [Int: Value] {
+        guard let value = get(key) else {
+            throw JSONDecodableError.missingTypeError(key: key)
+        }
+        guard let dictionary = value as? [Int: Value] else {
+            throw JSONDecodableError.incompatibleTypeError(key: key, elementType: type(of: value), expectedType: [Int: Value].self)
+        }
+        return dictionary
+    }
+    
+    // [Int:JSONCompatible]?
+    public func decode<Value: JSONCompatible>(_ key: String) throws -> [Int: Value]? {
+        guard let value = get(key) else {
+            return nil
+        }
+        guard let dictionary = value as? [Int: Value] else {
+            throw JSONDecodableError.incompatibleTypeError(key: key, elementType: type(of: value), expectedType: [Int: Value].self)
+        }
+        return dictionary
+    }
+    
+    // [Int:JSONDecodable]
+    public func decode<Element: JSONDecodable>(_ key: String) throws -> [Int: Element] {
+        guard let value = get(key) else {
+            throw JSONDecodableError.missingTypeError(key: key)
+        }
+        guard let dictionary = value as? [Int: JSONObject] else {
+            throw JSONDecodableError.incompatibleTypeError(key: key, elementType: type(of: value), expectedType: [Int: Element].self)
+        }
+        var decoded = [Int: Element]()
+        try dictionary.forEach {
+            decoded[$0] = try Element(object: $1)
+        }
+        return decoded
+    }
+    
+    // [Int:JSONDecodable]?
+    public func decode<Element: JSONDecodable>(_ key: String) throws -> [Int: Element]? {
+        guard let value = get(key) else {
+            return nil
+        }
+        guard let dictionary = value as? [Int: JSONObject] else {
+            throw JSONDecodableError.incompatibleTypeError(key: key, elementType: type(of: value), expectedType: [Int: Element].self)
+        }
+        var decoded = [Int: Element]()
+        try dictionary.forEach {
+            decoded[$0] = try Element(object: $1)
+        }
+        return decoded
+    }
+    
     // JSONTransformable
     public func decode<EncodedType, DecodedType>(_ key: String, transformer: JSONTransformer<EncodedType, DecodedType>) throws -> DecodedType {
         guard let value = get(key) else {
